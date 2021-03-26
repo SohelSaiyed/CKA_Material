@@ -1,0 +1,92 @@
+  Additional Resources
+    This question uses the acgk8s cluster. After logging in to the exam server, switch to the correct context with the command kubectl config use-context acgk8s.
+
+    Each of the objectives represents a task which you will need to complete using the available cluster and server(s). Read each objective carefully and complete the task specified.
+
+    For some objectives, you may need to ssh into other nodes or servers from the exam server. You can do so using the hostname/node name (i.e., ssh acgk8s-worker1).
+
+  Note: You cannot ssh into another node, or use kubectl to connect to the cluster, from any node other than the root node. Once you have completed the necessary tasks on a server, be sure to exit and return to the root node before proceeding.
+
+    If you need to assume root privileges on a server, you can do so with sudo -i.
+
+    You can run the verification script located at /home/cloud_user/verify.sh at any time to check your work!
+
+    Learning Objectives
+    0 of 2 completed
+    Upgrade All Kubernetes Components on the Control Plane Node
+    Upgrade all components on the control plane node to Kubernetes version 1.20.2.
+
+    Upgrade All Kubernetes Components on the Worker Node
+    Upgrade all components on the two worker nodes to Kubernetes version 1.20.2.
+
+  ###Answer::
+
+
+  CKA Practice Exam - Part 5
+    Introduction
+    This lab provides practice scenarios to help prepare you for the Certified Kubernetes Administrator (CKA) exam. You will be presented with tasks to complete as well as server(s) and/or an existing Kubernetes cluster to complete them in. You will need to use your knowledge of Kubernetes to successfully complete the provided tasks, much like you would on the real CKA exam. Good luck!
+
+    Solution
+  Log in to the server using the credentials provided:
+
+    ssh cloud_user@<PUBLIC_IP_ADDRESS>
+    Upgrade All Kubernetes Components on the Control Plane Node
+  Switch to the appropriate context with kubectl:
+
+    kubectl config use-context acgk8s
+  Upgrade kubeadm:
+
+    sudo apt-get update && \
+    sudo apt-get install -y --allow-change-held-packages kubeadm=1.20.2-00
+  Drain the control plane node:
+
+    kubectl drain acgk8s-control --ignore-daemonsets
+  Check whether the components are upgradeable to v1.20.2:
+
+    sudo kubeadm upgrade plan v1.20.2
+  Apply the upgrade:
+
+    sudo kubeadm upgrade apply v1.20.2
+  Upgrade kubelet and kubectl:
+
+    sudo apt-get update && \
+    sudo apt-get install -y --allow-change-held-packages kubelet=1.20.2-00 kubectl=1.20.2-00
+  Reload:
+
+    sudo systemctl daemon-reload
+  Restart kubelet:
+
+    sudo systemctl restart kubelet
+  Uncordon the control plane node:
+
+    kubectl uncordon acgk8s-control
+    Upgrade All Kubernetes Components on the Worker Node
+  Drain the worker1 node:
+
+    kubectl drain acgk8s-worker1 --ignore-daemonsets --force
+  SSH into the node:
+
+    ssh acgk8s-worker1
+  Install a new version of kubeadm:
+
+    sudo apt-get update && \
+    sudo apt-get install -y --allow-change-held-packages kubeadm=1.20.2-00
+  Upgrade the node:
+
+    sudo kubeadm upgrade node
+  Upgrade kubelet and kubectl:
+
+    sudo apt-get update && \
+    sudo apt-get install -y --allow-change-held-packages kubelet=1.20.2-00 kubectl=1.20.2-00
+  Reload:
+
+    sudo systemctl daemon-reload
+  Restart kubelet:
+
+    sudo systemctl restart kubelet
+    Type exit to exit the node.
+
+  Uncordon the node:
+
+    kubectl uncordon acgk8s-worker1
+    Repeat the process above for acgk8s-worker2 to upgrade the other worker node.

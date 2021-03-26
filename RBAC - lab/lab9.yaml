@@ -1,0 +1,97 @@
+#Question:
+  Additional Resources
+  This question uses the acgk8s cluster. After logging in to the exam server, switch to the correct context with the command kubectl config use-context acgk8s.
+
+  Each of the objectives represents a task which you will need to complete using the available cluster and server(s). Read each objective carefully and complete the task specified.
+
+  For some objectives, you may need to ssh into other nodes or servers from the exam server. You can do so using the hostname/node name, i.e. ssh acgk8s-worker1.
+
+Note: You cannot ssh into another node, or use kubectl to connect to the cluster, from any node other than the root node. Once you have completed the necessary tasks on a server, be sure to exit and return to the root node before proceeding.
+
+  If you need to assume root privileges on a server, you can do so with sudo -i.
+
+  You can run the verification script located at /home/cloud_user/verify.sh at any time to check your work!
+
+  Learning Objectives
+  0 of 2 completed
+  Create a Multi-Container Pod
+Create a pod called multi in the baz namespace. Run two containers in this pod, with the following images (in order):
+  nginx
+  redis
+  Create a Pod Which Uses a Sidecar to Expose the Main Container's Log File to `stdout`
+  Create a pod called logging-sidecar in the baz namespace.
+Run a container in this pod with the busybox image and the following command: sh -c while true; do echo Logging data > /output/output.log; sleep 5; done.
+  Add a second container called sidecar to the pod which also uses the busybox image, and reads the output from the first container, as well as prints it to the container log (console).
+
+#Answer::
+
+  Certified Kubernetes Administrator (CKA): Practice Exam: Part 7
+  Introduction
+  This lab provides practice scenarios to help prepare you for the Certified Kubernetes Administrator (CKA) Exam. You will be presented with tasks to complete, as well as server(s) and/or an existing Kubernetes cluster to complete them in. You will need to use your knowledge of Kubernetes, to successfully complete the provided tasks, much like you would on the real CKA exam. Good luck!
+
+  Solution
+  Log in to the server using the credentials provided:
+
+  ssh cloud_user@<PUBLIC_IP_ADDRESS>
+  Create a Multi-Container Pod
+  Switch to the acgk8s context:
+  kubectl config use-context acgk8s
+  Create a YAML file named multi.yml:
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: multi
+    namespace: baz
+  spec:
+    containers:
+      - name: nginx
+        image: nginx
+      - name: redis
+        image: redis
+  Save the file:
+  ESC
+  :wq
+  Create the multi-container pod:
+  kubectl create -f multi.yml
+  Check the status of the pod:
+  kubectl get pods -n baz
+  Check the status of the exam objectives:
+  ./verify.sh
+  Create a Pod Which Uses a Sidecar to Expose the Main Container's Log File to Stdout
+  Create a YAML file named logging-sidecar.yml:
+  vim logging-sidecar.yml
+  In the file, paste the following:
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: logging-sidecar
+    namespace: baz
+  spec:
+    containers:
+      - name: busybox1
+        image: busybox
+        command: ['sh', '-c', 'while true; do echo Logging data > /output/output.log; sleep 5; done']
+        volumeMounts:
+          - name: sharedvol
+            mountpath: /output
+      - name: sidecar
+        image: busybox
+        command: ['sh', '-c', 'tail -f /input/output.log']
+        volumeMounts:
+          - name: sharedvol
+            mountPath: /input
+    volumes:
+      - name: sharedvol
+        emptyDir: {}
+  Save the file:
+  ESC
+  :wq
+  Create the logging-sidecar pod:
+  kubectl create -f logging-sidecar.yml
+  Check the status of the pod:
+  kubectl get pods -n baz
+  Check the logging-sidecar logs:
+  kubectl logs logging-sidecar -n baz -c sidecar
+  Check the status of the exam objectives:
+
+  ./verify.sh
